@@ -19,7 +19,10 @@
         const ctx = canvas.getContext("2d");
         
         var x = 255, y = 255;
+        var w = 50, h = 50;
         var t_x = Math.random() * (canvas.width - 100), t_y = Math.random() * (canvas.height - 100);
+        var t_w = 50, t_h = 50;
+        var w_x = 100, w_y = 50, w_w = 300, w_h = 30;
         var dir = 0, speed = 5;
         document.addEventListener("keydown", (e)=>{
             switch(e.keyCode){
@@ -57,9 +60,25 @@
                     if(x < -50){ x = 550}
                     break;
             }
-            while(estaColisionando(x, y, 100, 100, t_x, t_y, 100, 100)){
-                t_x = Math.random() * (canvas.width - 100), t_y = Math.random() * (canvas.height - 100);
-                speed += 5;
+            while(estaColisionando(x, y, w, h, t_x, t_y, t_w, t_h)){
+                t_x = Math.random() * (canvas.width - 50), t_y = Math.random() * (canvas.height - 50);
+                speed += 1;
+            }
+            if(estaColisionando(x, y, w, h, w_x, w_y, w_w, w_h)){
+                switch(dir){
+                    case 87:
+                        y = w_y + w_h;
+                        break;
+                    case 83:
+                        y = w_y - h;
+                        break;
+                    case 68:
+                        x = w_x - w;
+                        break;
+                    case 65:
+                        x = w_x + w_w;
+                        break;
+                }
             }
             repaint();
             window.requestAnimationFrame(update);
@@ -70,8 +89,13 @@
             ctx.fillStyle = "white";
             ctx.fillRect(0, 0, 500, 500);
             ctx.fillStyle = random_rgba();
-            ctx.fillRect(x, y, 100, 100);
-            ctx.strokeRect(t_x, t_y, 100, 100);
+            ctx.fillRect(x, y, w, h);
+            //target
+            ctx.fillStyle = "black";
+            ctx.fillRect(t_x, t_y, t_w, t_h);
+            //wall
+            ctx.fillStyle = "grey";
+            ctx.fillRect(w_x, w_y, w_w, w_h);
         }
         
         window.requestAnimationFrame = (function () {
