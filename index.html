@@ -1,31 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title></title>
     <style>
-        canvas{
+        canvas {
             display: block;
             margin: auto;
             background-color: skyblue;
         }
     </style>
 </head>
+
 <body>
     <canvas id="myCanvas" width="500" height="500" style="border:1px solid grey"></canvas>
     <script>
         const canvas = document.getElementById("myCanvas");
         const ctx = canvas.getContext("2d");
-        
-        var x = 255, y = 255;
-        var w = 50, h = 50;
-        var t_x = Math.random() * (canvas.width - 100), t_y = Math.random() * (canvas.height - 100);
-        var t_w = 50, t_h = 50;
-        var w_x = 100, w_y = 50, w_w = 300, w_h = 30;
+
+        function random_rgba() {
+            var o = Math.round, r = Math.random, s = 255;
+            return 'rgba(' + o(r() * s) + ',' + o(r() * s) + ',' + o(r() * s) + ',' + r().toFixed(1) + ')';
+        }
+
+        function estaColisionando(x, y, w, h, t_x, t_y, t_w, t_h) {
+            if (x < t_x + t_w && x + w > t_x && y < t_y + t_h && y + h > t_y)
+                return true;
+            return false;
+        }
+
+        class Rectangulo {
+            constructor(x, y, w, h, color) {
+                this.x = x;
+                this.y = y;
+                this.w = w;
+                this.h = h;
+                this.color = color;
+            }
+
+            paint() {
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, this.w, this.h);
+            }
+        }
+
+        const player = new Rectangulo(255, 255, 50, 50, random_rgba());
+        const walls = [];
+        walls.push(new Rectangulo(100, 50, 300, 30, "gray"));
+        walls.push(new Rectangulo(100, 420, 300, 30, "gray"));
+        const target = new Rectangulo(Math.random() * (canvas.width - 100), Math.random() * (canvas.height - 100), 50, 50, "black");
+
         var dir = 0, speed = 5;
-        document.addEventListener("keydown", (e)=>{
-            switch(e.keyCode){
+        document.addEventListener("keydown", (e) => {
+            switch (e.keyCode) {
                 case 87:
                     dir = e.keyCode;
                     break;
@@ -40,64 +69,68 @@
                     break;
             }
         })
-        
-        function update(){
-            switch(dir){
+
+        function update() {
+            switch (dir) {
                 case 87:
-                    y -= speed;
-                    if(y < -50){ y = 550}
+                    player.y -= speed;
+                    if (player.y < -50) { player.y = 550 }
                     break;
                 case 83:
-                    y += speed;
-                    if(y > 550){ y = -50}
+                    player.y += speed;
+                    if (player.y > 550) { player.y = -50 }
                     break;
                 case 68:
-                    x += speed;
-                    if(x > 550){ x = -50}
+                    player.x += speed;
+                    if (player.x > 550) { player.x = -50 }
                     break;
                 case 65:
-                    x -= speed;
-                    if(x < -50){ x = 550}
+                    player.x -= speed;
+                    if (player.x < -50) { player.x = 550 }
                     break;
             }
-            while(estaColisionando(x, y, w, h, t_x, t_y, t_w, t_h)){
-                t_x = Math.random() * (canvas.width - 50), t_y = Math.random() * (canvas.height - 50);
+            while (estaColisionando(player.x, player.y, player.w, player.h, target.x, target.y, target.w, target.h)) {
+                target.x = Math.random() * (canvas.width - 50), target.y = Math.random() * (canvas.height - 50);
                 speed += 1;
             }
-            if(estaColisionando(x, y, w, h, w_x, w_y, w_w, w_h)){
-                switch(dir){
-                    case 87:
-                        y = w_y + w_h;
-                        break;
-                    case 83:
-                        y = w_y - h;
-                        break;
-                    case 68:
-                        x = w_x - w;
-                        break;
-                    case 65:
-                        x = w_x + w_w;
-                        break;
+            for (let i = 0; i < walls.length; i++) {
+                if (estaColisionando(player.x, player.y, player.w, player.h, walls[i].x, walls[i].y, walls[i].w, walls[i].h)) {
+                    switch (dir) {
+                        case 87:
+                            player.y = walls[i].y + walls[i].h;
+                            break;
+                        case 83:
+                            player.y = walls[i].y - player.h;
+                            break;
+                        case 68:
+                            player.x = walls[i].x - player.w;
+                            break;
+                        case 65:
+                            player.x = walls[i].x + walls[i].w;
+                            break;
+                    }
                 }
             }
             repaint();
             window.requestAnimationFrame(update);
 
         }
-        
-        function repaint(){
+
+        function repaint() {
             ctx.fillStyle = "white";
             ctx.fillRect(0, 0, 500, 500);
-            ctx.fillStyle = random_rgba();
-            ctx.fillRect(x, y, w, h);
-            //target
-            ctx.fillStyle = "black";
-            ctx.fillRect(t_x, t_y, t_w, t_h);
-            //wall
-            ctx.fillStyle = "grey";
-            ctx.fillRect(w_x, w_y, w_w, w_h);
+            
+            player.color = random_rgba();
+            player.paint();
+
+            target.paint();
+            for (let i = 0; i < walls.length; i++) {
+                walls[i].paint();
+                
+            }
+            // walls.paint();
         }
-        
+
         window.requestAnimationFrame = (function () {
             return window.requestAnimationFrame ||
                 window.webkitRequestAnimationFrame ||
@@ -107,17 +140,7 @@
                 };
         }());
         window.requestAnimationFrame(update);
-        
-        function random_rgba() {
-            var o = Math.round, r = Math.random, s = 255;
-            return 'rgba(' + o(r()*s) + ',' + o(r()*s) + ',' + o(r()*s) + ',' + r().toFixed(1) + ')';
-        }
-
-        function estaColisionando(x, y, w, h, t_x, t_y, t_w, t_h){
-            if(x < t_x + t_w &&  x + w > t_x &&    y < t_y + t_h &&    y + h > t_y)
-                return true;
-            return false;
-        }
     </script>
 </body>
+
 </html>
