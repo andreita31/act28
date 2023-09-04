@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <style>
+        canvas{
+            display: block;
+            margin: auto;
+            background-color: skyblue;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="myCanvas" width="500" height="500" style="border:1px solid grey"></canvas>
+    <script>
+        const canvas = document.getElementById("myCanvas");
+        const ctx = canvas.getContext("2d");
+        
+        var x = 255, y = 255;
+        var t_x = Math.random() * (canvas.width - 100), t_y = Math.random() * (canvas.height - 100);
+        var dir = 0, speed = 5;
+        document.addEventListener("keydown", (e)=>{
+            switch(e.keyCode){
+                case 87:
+                    dir = e.keyCode;
+                    break;
+                case 83:
+                    dir = e.keyCode;
+                    break;
+                case 68:
+                    dir = e.keyCode;
+                    break;
+                case 65:
+                    dir = e.keyCode;
+                    break;
+            }
+        })
+        
+        function update(){
+            switch(dir){
+                case 87:
+                    y -= speed;
+                    if(y < -50){ y = 550}
+                    break;
+                case 83:
+                    y += speed;
+                    if(y > 550){ y = -50}
+                    break;
+                case 68:
+                    x += speed;
+                    if(x > 550){ x = -50}
+                    break;
+                case 65:
+                    x -= speed;
+                    if(x < -50){ x = 550}
+                    break;
+            }
+            while(estaColisionando(x, y, 100, 100, t_x, t_y, 100, 100)){
+                t_x = Math.random() * (canvas.width - 100), t_y = Math.random() * (canvas.height - 100);
+                speed += 5;
+            }
+            repaint();
+            window.requestAnimationFrame(update);
+
+        }
+        
+        function repaint(){
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, 0, 500, 500);
+            ctx.fillStyle = random_rgba();
+            ctx.fillRect(x, y, 100, 100);
+            ctx.strokeRect(t_x, t_y, 100, 100);
+        }
+        
+        window.requestAnimationFrame = (function () {
+            return window.requestAnimationFrame ||
+                window.webkitRequestAnimationFrame ||
+                window.mozRequestAnimationFrame ||
+                function (callback) {
+                    window.setTimeout(callback, 17);
+                };
+        }());
+        window.requestAnimationFrame(update);
+        
+        function random_rgba() {
+            var o = Math.round, r = Math.random, s = 255;
+            return 'rgba(' + o(r()*s) + ',' + o(r()*s) + ',' + o(r()*s) + ',' + r().toFixed(1) + ')';
+        }
+
+        function estaColisionando(x, y, w, h, t_x, t_y, t_w, t_h){
+            if(x < t_x + t_w &&  x + w > t_x &&    y < t_y + t_h &&    y + h > t_y)
+                return true;
+            return false;
+        }
+    </script>
+</body>
+</html>
