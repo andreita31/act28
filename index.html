@@ -48,11 +48,12 @@
 
         const player = new Rectangulo(255, 255, 50, 50, random_rgba());
         const walls = [];
-        walls.push(new Rectangulo(100, 50, 300, 30, "gray"));
-        walls.push(new Rectangulo(100, 420, 300, 30, "gray"));
+        walls.push(new Rectangulo(100, 70, 300, 30, "gray"));
+        walls.push(new Rectangulo(100, 400, 300, 30, "gray"));
         const target = new Rectangulo(Math.random() * (canvas.width - 100), Math.random() * (canvas.height - 100), 50, 50, "black");
 
-        var dir = 0, speed = 5;
+        var dir = 0, speed = 5, score = 0, paused = true;
+
         document.addEventListener("keydown", (e) => {
             switch (e.keyCode) {
                 case 87:
@@ -67,58 +68,81 @@
                 case 65:
                     dir = e.keyCode;
                     break;
+                case 80:
+                    paused = !paused;
+                    break;
             }
         })
-
+            
         function update() {
-            switch (dir) {
-                case 87:
-                    player.y -= speed;
-                    if (player.y < -50) { player.y = 550 }
-                    break;
-                case 83:
-                    player.y += speed;
-                    if (player.y > 550) { player.y = -50 }
-                    break;
-                case 68:
-                    player.x += speed;
-                    if (player.x > 550) { player.x = -50 }
-                    break;
-                case 65:
-                    player.x -= speed;
-                    if (player.x < -50) { player.x = 550 }
-                    break;
-            }
-            while (estaColisionando(player.x, player.y, player.w, player.h, target.x, target.y, target.w, target.h)) {
-                target.x = Math.random() * (canvas.width - 50), target.y = Math.random() * (canvas.height - 50);
-                speed += 1;
-            }
-            for (let i = 0; i < walls.length; i++) {
-                if (estaColisionando(player.x, player.y, player.w, player.h, walls[i].x, walls[i].y, walls[i].w, walls[i].h)) {
-                    switch (dir) {
-                        case 87:
-                            player.y = walls[i].y + walls[i].h;
-                            break;
-                        case 83:
-                            player.y = walls[i].y - player.h;
-                            break;
-                        case 68:
-                            player.x = walls[i].x - player.w;
-                            break;
-                        case 65:
-                            player.x = walls[i].x + walls[i].w;
-                            break;
+            window.requestAnimationFrame(update);
+            if(!paused){
+                switch (dir) {
+                    case 87:
+                        player.y -= speed;
+                        if (player.y < -50) { player.y = 550 }
+                        break;
+                    case 83:
+                        player.y += speed;
+                        if (player.y > 550) { player.y = -50 }
+                        break;
+                    case 68:
+                        player.x += speed;
+                        if (player.x > 550) { player.x = -50 }
+                        break;
+                    case 65:
+                        player.x -= speed;
+                        if (player.x < -50) { player.x = 550 }
+                        break;
+                }
+                while (estaColisionando(player.x, player.y, player.w, player.h, target.x, target.y, target.w, target.h)) {
+                    target.x = Math.random() * (canvas.width - 50), target.y = Math.random() * (canvas.height - 50);
+                    speed += 1;
+                    score +=10;
+                }
+                for (let i = 0; i < walls.length; i++) {
+                    if (estaColisionando(player.x, player.y, player.w, player.h, walls[i].x, walls[i].y, walls[i].w, walls[i].h)) {
+                        switch (dir) {
+                            case 87:
+                                player.y = walls[i].y + walls[i].h;
+                                break;
+                            case 83:
+                                player.y = walls[i].y - player.h;
+                                break;
+                            case 68:
+                                player.x = walls[i].x - player.w;
+                                break;
+                            case 65:
+                                player.x = walls[i].x + walls[i].w;
+                                break;
+                        }
                     }
                 }
+                repaint();
             }
-            repaint();
-            window.requestAnimationFrame(update);
+            else
+            {
+                pausedScreen();
+            }
 
+            
+        }
+        
+        function pausedScreen(){
+            ctx.fillStyle = "rgba(155, 155, 155, .01)";
+            ctx.fillRect(0, 0, 500, 500);
+            ctx.font = "50px Arial";
+            ctx.fillStyle = "blue";
+            ctx.fillText("Pause", 180, 250);
         }
 
         function repaint() {
             ctx.fillStyle = "white";
             ctx.fillRect(0, 0, 500, 500);
+
+            ctx.font = "20px Arial black";
+            ctx.fillStyle = "black";
+            ctx.fillText("Score: " + score, 5, 20);
             
             player.color = random_rgba();
             player.paint();
@@ -128,7 +152,6 @@
                 walls[i].paint();
                 
             }
-            // walls.paint();
         }
 
         window.requestAnimationFrame = (function () {
