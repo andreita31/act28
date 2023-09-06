@@ -11,11 +11,16 @@
             margin: auto;
             background-color: skyblue;
         }
+        img{
+            display: none;
+        }
     </style>
 </head>
 
 <body>
     <canvas id="myCanvas" width="500" height="500" style="border:1px solid grey"></canvas>
+    <audio id="myAudio" src="pacman-music.mp3" type="audio/mp3"></audio>
+    <img id="michi" src="gato-negro.png" alt="michi">
     <script>
         const canvas = document.getElementById("myCanvas");
         const ctx = canvas.getContext("2d");
@@ -46,7 +51,11 @@
             }
         }
 
-        const player = new Rectangulo(255, 255, 50, 50, random_rgba());
+        // const player = new Rectangulo(255, 255, 50, 50, random_rgba());
+        var song = document.getElementById("myAudio");
+
+        const michi = document.getElementById("michi");
+        var p_x = 255, p_y = 255, dw = 50, dh = 50;
         const walls = [];
         walls.push(new Rectangulo(100, 70, 300, 30, "gray"));
         walls.push(new Rectangulo(100, 400, 300, 30, "gray"));
@@ -77,43 +86,45 @@
         function update() {
             window.requestAnimationFrame(update);
             if(!paused){
+                
+                song.play();
                 switch (dir) {
                     case 87:
-                        player.y -= speed;
-                        if (player.y < -50) { player.y = 550 }
+                        p_y -= speed;
+                        if (p_y < -50) { p_y = 550 }
                         break;
                     case 83:
-                        player.y += speed;
-                        if (player.y > 550) { player.y = -50 }
+                        p_y += speed;
+                        if (p_y > 550) { p_y = -50 }
                         break;
                     case 68:
-                        player.x += speed;
-                        if (player.x > 550) { player.x = -50 }
+                        p_x += speed;
+                        if (p_x > 550) { p_x = -50 }
                         break;
                     case 65:
-                        player.x -= speed;
-                        if (player.x < -50) { player.x = 550 }
+                        p_x -= speed;
+                        if (p_x < -50) { p_x = 550 }
                         break;
                 }
-                while (estaColisionando(player.x, player.y, player.w, player.h, target.x, target.y, target.w, target.h)) {
+                while (estaColisionando(p_x, p_y, dw, dh, target.x, target.y, target.w, target.h)) {
                     target.x = Math.random() * (canvas.width - 50), target.y = Math.random() * (canvas.height - 50);
                     speed += 1;
                     score +=10;
                 }
                 for (let i = 0; i < walls.length; i++) {
-                    if (estaColisionando(player.x, player.y, player.w, player.h, walls[i].x, walls[i].y, walls[i].w, walls[i].h)) {
+                    if (estaColisionando(p_x, p_y, dw, dh, walls[i].x, walls[i].y, walls[i].w, walls[i].h)) {
                         switch (dir) {
                             case 87:
-                                player.y = walls[i].y + walls[i].h;
+                                p_y = walls[i].y + walls[i].h;
                                 break;
                             case 83:
-                                player.y = walls[i].y - player.h;
+                                p_y = walls[i].y - dh;
                                 break;
                             case 68:
-                                player.x = walls[i].x - player.w;
+                                p_x = walls[i].x - dw;
                                 break;
                             case 65:
-                                player.x = walls[i].x + walls[i].w;
+                                p_x = walls[i].x + walls[i].w;
                                 break;
                         }
                     }
@@ -134,6 +145,7 @@
             ctx.font = "50px Arial";
             ctx.fillStyle = "blue";
             ctx.fillText("Pause", 180, 250);
+            song.pause();
         }
 
         function repaint() {
@@ -144,14 +156,16 @@
             ctx.fillStyle = "black";
             ctx.fillText("Score: " + score, 5, 20);
             
-            player.color = random_rgba();
-            player.paint();
+            // player.color = random_rgba();
+            // player.paint();
+
+            ctx.drawImage(michi, p_x, p_y, dw, dh);
 
             target.paint();
             for (let i = 0; i < walls.length; i++) {
                 walls[i].paint();
-                
             }
+            
         }
 
         window.requestAnimationFrame = (function () {
